@@ -34,7 +34,7 @@ public interface Modifier {
      *
      * @param option The option to set. Must be one of the values returned by getOptions().
      */
-    void setOption(String option);
+    void setSelectedOption(String option);
 
     /**
      * Provides the per day cost of this modifier.

@@ -27,7 +27,7 @@ public abstract class AbstractModifier implements Modifier {
     }
 
     @Override
-    public void setOption(String option) {
+    public void setSelectedOption(String option) {
         this.selectedOption = option;
     }
 
@@ -40,11 +40,11 @@ public abstract class AbstractModifier implements Modifier {
         List<String> options = getOptions(dayOfWeek);
         if (options.size() == 1) {
             // only a single option so we auto select it
-            this.setOption(options.get(0));
+            this.setSelectedOption(options.get(0));
         } else {
             while (getSelectedOption() == null) {
                 System.out.println(getDescription());
-                this.setOption(ConsoleUtils.captureOptionByIndex(console, options));
+                this.setSelectedOption(ConsoleUtils.captureOptionByIndex(console, options));
             }
         }
     }

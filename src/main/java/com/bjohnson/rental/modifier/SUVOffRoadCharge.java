@@ -9,7 +9,7 @@ import java.time.DayOfWeek;
  */
 public class SUVOffRoadCharge extends AbstractModifier {
 
-    private static final int FLAT_FEE = 15;
+    static final int FLAT_FEE = 15;
     private static final String DESCRIPTION = "Take SUV off road for an additional $" + FLAT_FEE;
 
 
@@ -24,6 +24,10 @@ public class SUVOffRoadCharge extends AbstractModifier {
 
     @Override
     public float getFlatFeeCost() {
+        // fee only applies if opted for
+        if (!RentalConstants.MODIFIER_OPTION_YES.equals(getSelectedOption())) {
+            return 0F;
+        }
         return FLAT_FEE;
     }
 }

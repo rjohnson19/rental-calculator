@@ -7,11 +7,10 @@ import com.bjohnson.rental.value.VehicleType;
 import com.bjohnson.rental.vehicle.Vehicle;
 
 import java.io.Console;
+import java.text.NumberFormat;
 import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.time.format.TextStyle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,7 +23,8 @@ public class RentalApplication {
     private VehicleRentalFactory rentalFactory;
     private Console console;
     private static final List<String> DAYS_OF_WEEK = new ArrayList<>(Arrays.stream(DayOfWeek.values())
-            .map(Enum::name).collect(Collectors.toList()));
+            .map(value -> value.getDisplayName(TextStyle.FULL, Locale.getDefault()))
+            .collect(Collectors.toList()));
 
     public RentalApplication(final Console console) {
         this.vehicles = new ArrayList<>();
@@ -41,7 +41,7 @@ public class RentalApplication {
             System.out.println("Choose day of rental.");
             String day = ConsoleUtils.captureOptionByIndex(console, DAYS_OF_WEEK);
             if (Objects.nonNull(day) && !day.isEmpty()) {
-                dayOfWeek = DayOfWeek.valueOf(day);
+                dayOfWeek = DayOfWeek.valueOf(day.toUpperCase());
             }
         }
     }
@@ -69,12 +69,19 @@ public class RentalApplication {
     }
 
     private void collectModifierOptions() {
-        System.out.println("Choose additional options for the vehicles you are renting.");
-        vehicles.forEach(this::collectVehicleModifierOptions);
+        if (vehiclesHaveAnyModifiers()) {
+            System.out.println("Choose additional options for the vehicles you are renting.");
+            vehicles.forEach(this::collectVehicleModifierOptions);
+        }
     }
 
     private void collectVehicleModifierOptions(Vehicle vehicle) {
         vehicle.getApplicableModifiers().forEach(modifier -> modifier.captureSelection(console, dayOfWeek));
+    }
+
+    private boolean vehiclesHaveAnyModifiers() {
+        return vehicles.stream()
+                .anyMatch(vehicle -> !vehicle.getApplicableModifiers().isEmpty());
     }
 
     private void execute() {
@@ -84,7 +91,8 @@ public class RentalApplication {
 
         collectModifierOptions();
 
-        System.out.println("Grand Total: $" + getTotalCost());
+        final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
+        System.out.println("Grand Total: " + currencyFormat.format(getTotalCost()));
     }
 
     private float getTotalCost() {
@@ -103,10 +111,6 @@ public class RentalApplication {
             System.exit(1);
         }
         final RentalApplication rentalApplication = new RentalApplication(console);
-        try {
-            rentalApplication.execute();
-        } finally {
-            console.flush();
-        }
+        rentalApplication.execute();
     }
 }
