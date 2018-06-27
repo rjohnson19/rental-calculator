@@ -18,7 +18,9 @@ import java.util.stream.Collectors;
  * and used to calculate the total rental cost.
  */
 public class RentalApplication {
-    private DayOfWeek dayOfWeek;
+    private DayOfWeek startDayOfWeek;
+    private List<DayOfWeek> daysOfRental;
+    private int rentalDuration = -1;
     private List<Vehicle> vehicles;
     private VehicleRentalFactory rentalFactory;
     private Console console;
@@ -32,17 +34,33 @@ public class RentalApplication {
         this.console = console;
     }
 
-    public void setDayOfWeek(DayOfWeek dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
-
     private void captureDayOfWeek() {
-        while (dayOfWeek == null) {
-            System.out.println("Choose day of rental.");
+        while (startDayOfWeek == null) {
+            System.out.println("Choose starting day of rental.");
             String day = ConsoleUtils.captureOptionByIndex(console, DAYS_OF_WEEK);
             if (Objects.nonNull(day) && !day.isEmpty()) {
-                dayOfWeek = DayOfWeek.valueOf(day.toUpperCase());
+                startDayOfWeek = DayOfWeek.valueOf(day.toUpperCase());
             }
+        }
+    }
+
+    private void captureRentalDuration() {
+        while (rentalDuration < 0) {
+            System.out.print("Enter how many days your rental is for (minimum 1): ");
+            int duration = ConsoleUtils.nextIntOrDefault(console, -1);
+            if (duration > 0) {
+                rentalDuration = duration;
+            } else {
+                System.out.println("Please enter a positive integer for rental duration.");
+            }
+        }
+    }
+
+    private void calculateRentalDaysList() {
+        daysOfRental = new ArrayList<>();
+        daysOfRental.add(startDayOfWeek);
+        for (int daysCount = 1; daysCount < rentalDuration; daysCount++) {
+            daysOfRental.add(startDayOfWeek.plus(daysCount));
         }
     }
 
@@ -55,7 +73,7 @@ public class RentalApplication {
         final String vehicleName = vehicleType.getName();
         int quantity = -1;
         while (quantity < 0) {
-            System.out.print("Enter desired number of " + vehicleName + "(s) to rent, 0 for none: ");
+            System.out.print("Enter desired number of " + vehicleName + "s to rent, 0 for none: ");
             quantity = ConsoleUtils.nextIntOrDefault(console, -1);
         }
 
@@ -76,7 +94,7 @@ public class RentalApplication {
     }
 
     private void collectVehicleModifierOptions(Vehicle vehicle) {
-        vehicle.getApplicableModifiers().forEach(modifier -> modifier.captureSelection(console, dayOfWeek));
+        vehicle.getApplicableModifiers().forEach(modifier -> modifier.captureSelection(console, startDayOfWeek));
     }
 
     private boolean vehiclesHaveAnyModifiers() {
@@ -85,10 +103,20 @@ public class RentalApplication {
     }
 
     private void execute() {
+        // determine what day the rental starts
         captureDayOfWeek();
 
+        // and how long it runs for
+        captureRentalDuration();
+
+        // use that to get a list of days being rented:
+        // sunday, monday, tuesday, ...
+        calculateRentalDaysList();
+
+        // ask the user what vehicles to rent and how many
         captureVehicleRentals();
 
+        // capture modifiers based on the chosen vehicles.
         collectModifierOptions();
 
         final NumberFormat currencyFormat = NumberFormat.getCurrencyInstance();
@@ -98,7 +126,7 @@ public class RentalApplication {
     private float getTotalCost() {
         float totalCost = 0;
         for (Vehicle vehicle : vehicles) {
-            totalCost += vehicle.getCost(dayOfWeek, vehicles);
+            totalCost += vehicle.getCost(daysOfRental, vehicles);
         }
 
         return totalCost;

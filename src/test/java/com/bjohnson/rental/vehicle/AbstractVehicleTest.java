@@ -15,6 +15,6 @@ public class AbstractVehicleTest {
 
     protected void validatePriceOnDay(final DayOfWeek dayOfWeek, final float expectedPrice, final List<Vehicle> otherVehicles) {
         assertEquals("Cost should be $" + expectedPrice, expectedPrice,
-                vehicle.getCost(dayOfWeek, otherVehicles), 0F);
+                vehicle.getCost(Collections.singletonList(dayOfWeek), otherVehicles), 0F);
     }
 }

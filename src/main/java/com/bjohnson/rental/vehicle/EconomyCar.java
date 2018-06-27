@@ -3,7 +3,6 @@ package com.bjohnson.rental.vehicle;
 import com.bjohnson.rental.value.VehicleType;
 
 import java.time.DayOfWeek;
-import java.util.List;
 
 public class EconomyCar extends MidsizeCar {
 
@@ -19,11 +18,9 @@ public class EconomyCar extends MidsizeCar {
     }
 
     @Override
-    public float getCost(DayOfWeek dayOfWeek, List<Vehicle> otherRentals) {
-        // economy has a 50% discount from the midsize cost.
-        float myCost = super.getCost(dayOfWeek, otherRentals);
+    protected float applyDayBasedModifications(DayOfWeek dayOfWeek, float myCost) {
+        // economy has a 50% discount from the midsize cost per day
         myCost -= (myCost * DISCOUNT_PERCENTAGE);
-
         return myCost;
     }
 }

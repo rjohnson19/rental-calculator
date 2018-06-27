@@ -29,16 +29,9 @@ public class SUV extends MidsizeCar {
     }
 
     @Override
-    public float getCost(DayOfWeek dayOfWeek, List<Vehicle> otherRentals) {
-        // SUVs cost 50% more then the midsize car rate, but that doesn't include the offroad fee,
-        // so we need to customize the cost calculation.
-        // first get the midsize could for our quantity, without including the offroad modifier:
-        float myCost = calculateBaseCost(otherRentals);
-        myCost = applyDayBasedModifications(dayOfWeek, myCost);
-        // apply a 50% premium to that
-        myCost += (myCost * PREMIUM_PERCENTAGE);
-        // apply any offroad fee
-        return addModifierCosts(dayOfWeek, myCost, otherRentals);
+    protected float applyDayBasedModifications(DayOfWeek dayOfWeek, float myCost) {
+        // SUVs cost 50% more then the midsize car rate
+        return (float) (myCost + (myCost * PREMIUM_PERCENTAGE));
 
     }
 }

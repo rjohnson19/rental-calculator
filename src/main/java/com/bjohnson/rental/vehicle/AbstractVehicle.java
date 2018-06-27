@@ -22,13 +22,23 @@ public abstract class AbstractVehicle implements Vehicle {
     }
 
     @Override
-    public float getCost(DayOfWeek dayOfWeek, List<Vehicle> otherRentals) {
-        // our default implementation of rental costs for a given day
-        // - multiply the cost per day by the effective quantity
-        // - add applicable modifier costs including per day additions and flat fees
-        // -- apply premiums or discounts based on differences in demand on certain days
-        float standardCost = calculateDayStandardCost(dayOfWeek, otherRentals);
-        return applyDayBasedModifications(dayOfWeek, standardCost);
+    public float getCost(List<DayOfWeek> daysOfWeek, List<Vehicle> otherRentals) {
+        // our default implementation of rental costs for a set of days
+        // - for each day:
+        //  - multiply the cost per day by the effective quantity
+        //  - add applicable modifier costs for the given day
+        //  - apply premiums or discounts based on differences in demand on certain days
+        // - add flat fees that apply
+        float totalVehicleCost = 0F;
+        for (DayOfWeek dayOfWeek : daysOfWeek) {
+            float dayCost = getCostPerDay() * getEffectiveQuantity(otherRentals);
+            dayCost = addModifierDayCosts(dayOfWeek, dayCost, otherRentals);
+            dayCost = applyDayBasedModifications(dayOfWeek, dayCost);
+
+            totalVehicleCost += dayCost;
+        }
+        return addModifierFlatFees(totalVehicleCost, otherRentals);
+
     }
 
     @Override
@@ -62,7 +72,7 @@ public abstract class AbstractVehicle implements Vehicle {
     protected float calculateDayStandardCost(DayOfWeek dayOfWeek, List<Vehicle> otherVehicles) {
         float myCost = calculateBaseCost(otherVehicles);
         // apply any per day cost, and fixed fee modifiers to each vehicle being rented
-        myCost = addModifierCosts(dayOfWeek, myCost, otherVehicles);
+        myCost = addModifierDayCosts(dayOfWeek, myCost, otherVehicles);
 
         return myCost;
     }
@@ -77,19 +87,28 @@ public abstract class AbstractVehicle implements Vehicle {
     }
 
     /**
-     * Calculates the cost associated with modifiers applied to this rental, and adds them to the cost.
+     * Calculates the cost associated with modifiers applied to this rental, specific to a particular day.
      * @param dayOfWeek Day of week vehicle is being rented.
      * @param myCost The current base cost of the vehicle.
      * @return Updated cost, accounting for any modifiers applied.
      */
-    protected float addModifierCosts(DayOfWeek dayOfWeek, float myCost, List<Vehicle> otherVehicles) {
+    protected float addModifierDayCosts(DayOfWeek dayOfWeek, float myCost, List<Vehicle> otherVehicles) {
         final int effectiveQuantity = getEffectiveQuantity(otherVehicles);
         for (Modifier modifier : getApplicableModifiers()) {
-            float perDayModifierCost = modifier.getPerDayCost(dayOfWeek) * effectiveQuantity;
-            myCost += perDayModifierCost;
-            // also apply any flat fee
-            myCost += modifier.getFlatFeeCost();
+                float perDayModifierCost = modifier.getPerDayCost(dayOfWeek) * effectiveQuantity;
+                myCost += perDayModifierCost;
         }
+        return myCost;
+    }
+
+    protected float addModifierFlatFees(float myCost, List<Vehicle> otherVehicles) {
+        // assuming that flat fees apply for each vehicle (2 SUVs needs 2 off road charges)
+        final int effectiveQuantity = getEffectiveQuantity(otherVehicles);
+        for (Modifier modifier : getApplicableModifiers()) {
+            float flatFee = modifier.getFlatFeeCost() * effectiveQuantity;
+            myCost += flatFee;
+        }
+
         return myCost;
     }
 

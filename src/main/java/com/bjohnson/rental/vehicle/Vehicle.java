@@ -39,11 +39,11 @@ public interface Vehicle {
      * This method should take into account any modifiers, in addition to the
      * Day of the Week it is being rented on, and other rentals made by the renter if applicable.
      *
-     * @param dayOfWeek    The day of the week this rental is for.
+     * @param daysOfWeek    The days of the week this rental is for.
      * @param otherRentals Other vehicles being rented by the renter.
      * @return The cost of renting this vehicle on the given day.
      */
-    float getCost(DayOfWeek dayOfWeek, List<Vehicle> otherRentals);
+    float getCost(List<DayOfWeek> daysOfWeek, List<Vehicle> otherRentals);
 
 
 }

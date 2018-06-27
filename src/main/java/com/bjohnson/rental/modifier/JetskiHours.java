@@ -12,7 +12,7 @@ import java.util.Collections;
  */
 public class JetskiHours extends AbstractModifier {
     private static final int COST_PER_HOUR = 25;
-    private static final String DESCRIPTION = "Enter how many hours you'd like to use the Jetskis, $" + COST_PER_HOUR + "/hour";
+    private static final String DESCRIPTION = "Enter how many hours per day you'd like to use the Jetskis, $" + COST_PER_HOUR + "/hour";
     private static final String MSG_INVALID_INPUT_JETSKI_HOURS = "Please enter a positive integer for Jetski hours.";
 
     private int hours = 0;
